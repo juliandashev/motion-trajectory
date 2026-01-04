@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MotionTrajectory VERSION 1.0.0 LANGUAGES CXX)
+project(MotionTrajectory
+    VERSION 1.0.0
+    LANGUAGES CXX
+)
 
 # =====================
 # C++ standard
@@ -13,8 +16,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # =====================
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "No build type specified. Defaulting to Release.")
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
+
+# =====================
+# Set flags
+# =====================
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic")
 
 # =====================
 # Find OpenCV
@@ -22,52 +30,11 @@ endif()
 find_package(OpenCV REQUIRED)
 
 # =====================
-# Source files
+# Add subdirectories
 # =====================
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.cc"
-)
-
-# =====================
-# Executable
-# =====================
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-# =====================
-# Compiler options (TARGET-based)
-# =====================
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-)
-
-# Debug symbols only in Debug
-target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:-g>
-)
-
-# =====================
-# Link OpenCV
-# =====================
-target_link_libraries(${PROJECT_NAME}
-    ${OpenCV_LIBS}
-)
-
-# =====================
-# MinGW specific
-# =====================
-if (MINGW)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE WIN64 _AMD64_ IS_64BIT)
-endif()
-
-# =====================
-# Install
-# =====================
-install(
-    TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-)
+add_subdirectory(include)
+add_subdirectory(src)
+add_subdirectory(app)
 
 # =====================
 # Info

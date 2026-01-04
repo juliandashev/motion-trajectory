@@ -1,0 +1,3 @@
+add_library(MotionTrajectoryHeaders INTERFACE)
+
+target_include_directories(MotionTrajectoryHeaders INTERFACE .)
