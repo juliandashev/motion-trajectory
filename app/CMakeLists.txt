@@ -9,6 +9,5 @@ target_link_libraries(MotionTrajectory
 
 install(
     TARGETS MotionTrajectory
-    LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
 )

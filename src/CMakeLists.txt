@@ -1,5 +1,4 @@
 add_library(MotionTrajectoryCore STATIC
-    Trajectory.cc
     VideoProcessor.cc
 )
 

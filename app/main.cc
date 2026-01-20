@@ -2,11 +2,11 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-#include "Trajectory.hpp"
 #include "VideoProcessor.hpp"
 
 int main(int argc, char** argv) {
   std::string videoPath = (argc >= 2) ? argv[1] : "T2_video_moon.mp4";
+  std::string outputPath = (argc >= 3) ? argv[2] : "out_trajectory.mp4";
 
   cv::VideoCapture cap(videoPath);
 
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   int H = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
   double fps = cap.get(cv::CAP_PROP_FPS);
 
-  cv::VideoWriter writer("out/out_trajectory.mp4",
+  cv::VideoWriter writer(outputPath,
                          cv::VideoWriter::fourcc('m', 'p', '4', 'v'), fps,
                          cv::Size(W, H));
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   }
 
   VideoProcessor processor;
-  Trajectory trajectory;
+  std::vector<cv::Point2f> trajectory;
 
   cv::Mat frame;
   cv::Point2f prevCenter;
@@ -48,10 +48,8 @@ int main(int argc, char** argv) {
 
       // wait until detection stabilizes
       if (stableCount >= REQUIRED_STABLE_FRAMES) {
-        trajectory.addPoint(center);
-
         if (havePrev) {
-          trajectory.addVelocity(center - prevCenter);
+          trajectory.push_back(center);
         }
 
         prevCenter = center;
@@ -63,9 +61,9 @@ int main(int argc, char** argv) {
     }
 
     // draw measured trajectory
-    const auto& pts = trajectory.points();
-    for (std::size_t i = 1; i < pts.size(); ++i) {
-      cv::line(frame, pts[i - 1], pts[i], cv::Scalar(255, 0, 0), 2);
+    for (std::size_t i = 1; i < trajectory.size(); ++i) {
+      cv::line(frame, trajectory[i - 1], trajectory[i], cv::Scalar(255, 0, 0),
+               2);
     }
 
     // write frame to output video
@@ -75,33 +73,7 @@ int main(int argc, char** argv) {
     if (cv::waitKey(30) == 27) break;
   }
 
-  trajectory.extrapolateEuler(W, H);
-
-  cv::Mat finalFrame(H, W, CV_8UC3, cv::Scalar(0, 0, 0));
-
-  auto pts = trajectory.points();
-  std::size_t predStart = trajectory.predictionStart();
-
-  for (std::size_t i = 1; i < pts.size(); ++i) {
-    cv::Scalar color =
-        (i < predStart) ? cv::Scalar(255, 0, 0) : cv::Scalar(0, 0, 255);
-
-    cv::line(finalFrame, pts[i - 1], pts[i], color, 2);
-  }
-
-  cv::Mat display;
-
-  cv::resize(finalFrame, display, cv::Size(), 0.5, 0.5);
-  cv::imshow("final trajectory", display);
-
   cv::waitKey(0);
-
-  std::ofstream out("out/trajectory.txt");
-
-  for (const auto& p : pts) {
-    out << p.x << " " << p.y << "\n";
-  }
-  out.close();
 
   writer.release();
   cap.release();

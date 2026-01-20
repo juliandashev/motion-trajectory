@@ -27,6 +27,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra -Wpedantic")
 # =====================
 # Find OpenCV
 # =====================
+set(OpenCV_DIR "/usr/lib/x86_64-linux-gnu/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
 # =====================
